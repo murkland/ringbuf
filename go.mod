@@ -1,3 +1,3 @@
-module github.com/nbarena/ringbuf
+module github.com/undernet/ringbuf
 
 go 1.18

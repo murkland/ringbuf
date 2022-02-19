@@ -1,3 +1,3 @@
-module github.com/undernet/ringbuf
+module github.com/yumland/ringbuf
 
 go 1.18

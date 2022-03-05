@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/yumland/ringbuf"
+	"github.com/murkland/ringbuf"
 )
 
 func TestRingbuf_PushOutOfBounds(t *testing.T) {

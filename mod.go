@@ -1,13 +1,6 @@
 package ringbuf
 
-import (
-	"errors"
-)
-
-var (
-	ErrWriteTooLarge = errors.New("write too large")
-	ErrReadTooLarge  = errors.New("read too large")
-)
+import "fmt"
 
 type RingBuf[T any] struct {
 	items      []T
@@ -20,12 +13,12 @@ func New[T any](capacity int) *RingBuf[T] {
 	return &RingBuf[T]{items: make([]T, capacity)}
 }
 
-func (r *RingBuf[T]) Peek(items []T, offset int) error {
+func (r *RingBuf[T]) Peek(items []T, offset int) {
 	i := (r.readIndex + offset) % len(r.items)
 
 	n := r.Used()
 	if n < len(items) {
-		return ErrReadTooLarge
+		panic(fmt.Sprintf("peek too large: %d < %d", n, len(items)))
 	}
 
 	if n > len(items) {
@@ -38,17 +31,15 @@ func (r *RingBuf[T]) Peek(items []T, offset int) error {
 		copy(items, r.items[i:len(r.items)])
 		copy(items[len(r.items)-i:], r.items[:n-len(r.items)+i])
 	}
-
-	return nil
 }
 
-func (r *RingBuf[T]) Push(items []T) error {
+func (r *RingBuf[T]) Push(items []T) {
 	if len(items) == 0 {
-		return nil
+		return
 	}
 
 	if r.Free() < len(items) {
-		return ErrWriteTooLarge
+		panic(fmt.Sprintf("push too large: %d < %d", r.Free(), len(items)))
 	}
 
 	if r.writeIndex >= r.readIndex {
@@ -71,22 +62,26 @@ func (r *RingBuf[T]) Push(items []T) error {
 		r.isFull = true
 	}
 
-	return nil
+	return
 }
 
-func (r *RingBuf[T]) Advance(n int) error {
+func (r *RingBuf[T]) Advance(n int) {
 	if n == 0 {
-		return nil
+		return
 	}
 
 	if n > r.Used() {
-		return ErrReadTooLarge
+		panic(fmt.Sprintf("advance too large: %d < %d", r.Used(), n))
 	}
 	r.readIndex = (r.readIndex + n) % len(r.items)
 	if r.readIndex == r.writeIndex {
 		r.isFull = false
 	}
-	return nil
+}
+
+func (r *RingBuf[T]) Pop(items []T, offset int) {
+	r.Peek(items, offset)
+	r.Advance(len(items))
 }
 
 func (r *RingBuf[T]) Free() int {

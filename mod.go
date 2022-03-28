@@ -101,3 +101,7 @@ func (r *RingBuf[T]) Used() int {
 	}
 	return len(r.items) - r.readIndex + r.writeIndex
 }
+
+func (r *RingBuf[T]) Capacity() int {
+	return len(r.items)
+}
